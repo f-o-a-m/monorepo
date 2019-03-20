@@ -503,7 +503,9 @@ export class AppRoot {
     };
 
     provider.once(transactionHash, onMultisigMined);
-    console.log(`waiting for kovan transaction https://kovan.etherscan.io/tx/${transactionHash}`);
+    console.log(
+      `waiting for kovan transaction https://kovan.etherscan.io/tx/${transactionHash}`
+    );
 
     setTimeout(() => {
       if (!onMultisigMinedHasBeenCalled) {
