@@ -4,7 +4,7 @@
   "dependencies": {
     "@counterfactual/apps": "0.1.1",
     "react": "^16.8.5",
-    "react-dom": "^16.7.0",
+    "react-dom": "^16.8.5",
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.1.5"
   },
