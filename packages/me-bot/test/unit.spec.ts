@@ -18,12 +18,6 @@ function bigNumberifyBoard(board) {
 
 describe("takeTurn", () => {
 
-  it("kristoffer", () => {
-
-    expect(1).toBe(0);
-
-  });
-
   it("throws an error if there are no moves to make", () => {
     const board = bigNumberifyBoard([[1, 1, 2], [2, 2, 1], [1, 2, 1]]);
     expect(() => takeTurn(board, 2)).toThrowError(
