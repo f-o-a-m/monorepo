@@ -26,17 +26,17 @@ type TicTacToeAppState = {
 function decodeBytesToAppState(encodedAppState: string): TicTacToeAppState {
   return defaultAbiCoder.decode(
     [
-      "tuple(address[2] players, uint256 turnNum, uint256 winner, uint256[3][3] board)"
+      "tuple(address[2] players, uint256 turnNum, uint256 winner, uint256[2][100] board)"
     ],
     encodedAppState
   )[0];
 }
 
 describe("MEApp", () => {
-  let ticTacToe: Contract;
+  let me: Contract;
 
   async function resolve(state: SolidityABIEncoderV2Struct, terms: Terms) {
-    return await ticTacToe.functions.resolve(encodeState(state), terms);
+    return await me.functions.resolve(encodeState(state), terms);
   }
 
   function encodeState(state: SolidityABIEncoderV2Struct) {
@@ -47,7 +47,7 @@ describe("MEApp", () => {
           address[2] players,
           uint256 turnNum,
           uint256 winner,
-          uint256[3][3] board
+          uint256[2][100] board
         )
       `
       ],
@@ -78,7 +78,7 @@ describe("MEApp", () => {
     state: SolidityABIEncoderV2Struct,
     action: SolidityABIEncoderV2Struct
   ) {
-    return await ticTacToe.functions.applyAction(
+    return await me.functions.applyAction(
       encodeState(state),
       encodeAction(action)
     );
@@ -87,7 +87,7 @@ describe("MEApp", () => {
   before(async () => {
     const provider = waffle.createMockProvider();
     const wallet = (await waffle.getWallets(provider))[0];
-    ticTacToe = await waffle.deployContract(wallet, MEApp);
+    me = await waffle.deployContract(wallet, MEApp);
   });
 
   describe("applyAction", () => {
@@ -96,7 +96,7 @@ describe("MEApp", () => {
         players: [AddressZero, AddressZero],
         turnNum: 0,
         winner: 0,
-        board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        board: Array(100).fill([0,0]) //[[0, 0], [0, 0], [0, 0]]
       };
 
       const action = {
@@ -118,11 +118,14 @@ describe("MEApp", () => {
     });
 
     it("can place into an empty square", async () => {
+      var a = Array(99).fill([0,0])
+      a.push([1,0])
+      a.reverse()
       const preState = {
         players: [AddressZero, AddressZero],
         turnNum: 1,
         winner: 0,
-        board: [[1, 0, 0], [0, 0, 0], [0, 0, 0]]
+        board: a
       };
 
       const action = {
@@ -144,11 +147,14 @@ describe("MEApp", () => {
     });
 
     it("cannot placeinto an occupied square", async () => {
+      var a = Array(99).fill([0,0])
+      a.push([1,0])
+      a.reverse()
       const preState = {
         players: [AddressZero, AddressZero],
         turnNum: 0,
         winner: 0,
-        board: [[1, 0, 0], [0, 0, 0], [0, 0, 0]]
+        board: a
       };
 
       const action = {
@@ -167,11 +173,12 @@ describe("MEApp", () => {
     });
 
     it("can draw from a full board", async () => {
+      var a = Array(100).fill([1,2])
       const preState = {
         players: [AddressZero, AddressZero],
         turnNum: 0,
         winner: 0,
-        board: [[1, 2, 1], [1, 2, 2], [2, 1, 2]]
+        board: a
       };
 
       const action = {
@@ -192,11 +199,13 @@ describe("MEApp", () => {
     });
 
     it("cannot draw from a non-full board", async () => {
+      var a = Array(99).fill([1,2])
+      a.push([1,0])
       const preState = {
         players: [AddressZero, AddressZero],
         turnNum: 0,
         winner: 0,
-        board: [[1, 2, 1], [1, 0, 2], [2, 1, 2]]
+        board: a
       };
 
       const action = {
@@ -215,11 +224,14 @@ describe("MEApp", () => {
     });
 
     it("can play_and_draw from an almost full board", async () => {
+      var a = Array(99).fill([1,2])
+      a.push([1,0])
+      a.reverse()
       const preState = {
         players: [AddressZero, AddressZero],
         turnNum: 0,
         winner: 0,
-        board: [[0, 2, 1], [1, 2, 2], [2, 1, 2]]
+        board: a
       };
 
       const action = {
@@ -240,11 +252,15 @@ describe("MEApp", () => {
     });
 
     it("cannot play_and_draw from a sparse board", async () => {
+      var a = Array(98).fill([1,2])
+      a.push([0,2])
+      a.reverse()
+      a.push([1,0])
       const preState = {
         players: [AddressZero, AddressZero],
         turnNum: 0,
         winner: 0,
-        board: [[0, 2, 1], [1, 2, 2], [2, 0, 0]]
+        board: a
       };
 
       const action = {
@@ -263,11 +279,14 @@ describe("MEApp", () => {
     });
 
     it("can play_and_win from a winning position", async () => {
+      var a = Array(99).fill([0,0])
+      a.push([1,0])
+      a.reverse()
       const preState = {
         players: [AddressZero, AddressZero],
         turnNum: 0,
         winner: 0,
-        board: [[1, 1, 0], [0, 0, 0], [0, 0, 0]]
+        board: a
       };
 
       const action = {
@@ -288,11 +307,14 @@ describe("MEApp", () => {
     });
 
     it("cannot play_and_win from a non winning position", async () => {
+      var a = Array(99).fill([0,0])
+      a.push([1,0])
+      a.reverse()
       const preState = {
         players: [AddressZero, AddressZero],
         turnNum: 0,
         winner: 0,
-        board: [[1, 0, 0], [0, 0, 0], [0, 0, 0]]
+        board: a
       };
 
       const action = {
@@ -312,11 +334,14 @@ describe("MEApp", () => {
   });
   describe("resolve", () => {
     it("playerFirst wins should resolve correctly", async () => {
+      var a = Array(99).fill([0,0])
+      a.push([1,0])
+      a.reverse()
       const preState = {
         players: [A, B],
         turnNum: 0,
         winner: 0,
-        board: [[1, 1, 0], [0, 0, 0], [0, 0, 0]]
+        board: a
       };
 
       const action = {

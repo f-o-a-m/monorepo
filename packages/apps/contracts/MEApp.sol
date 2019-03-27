@@ -8,17 +8,13 @@ import "@counterfactual/contracts/contracts/CounterfactualApp.sol";
 contract MEApp is CounterfactualApp {
 
   enum ActionType {
-    PLAY,
-    PLAY_AND_WIN,
-    PLAY_AND_DRAW,
-    DRAW
+    TICK,
+    TICK_AND_WIN,
+    TICK_AND_DRAW
   }
 
   enum WinClaimType {
-    COL,
-    ROW,
-    DIAG,
-    CROSS_DIAG
+    COL
   }
 
   struct WinClaim {
@@ -41,7 +37,7 @@ contract MEApp is CounterfactualApp {
     address[2] players;
     uint256 turnNum;
     uint256 winner;
-    uint256[3][3] board;
+    uint256[100][2] board;
   }
 
   struct Action {
@@ -78,19 +74,15 @@ contract MEApp is CounterfactualApp {
     Action memory action = abi.decode(encodedAction, (Action));
 
     AppState memory postState;
-    if (action.actionType == ActionType.PLAY) {
+    if (action.actionType == ActionType.TICK) {
       postState = playMove(state, state.turnNum % 2, action.playX, action.playY);
-    } else if (action.actionType == ActionType.PLAY_AND_WIN) {
+    } else if (action.actionType == ActionType.TICK_AND_WIN) {
       postState = playMove(state, state.turnNum % 2, action.playX, action.playY);
       assertWin(state.turnNum % 2, postState, action.winClaim);
       postState.winner = (postState.turnNum % 2) + 1;
-    } else if (action.actionType == ActionType.PLAY_AND_DRAW) {
+    } else if (action.actionType == ActionType.TICK_AND_DRAW) {
       postState = playMove(state, state.turnNum % 2, action.playX, action.playY);
       assertBoardIsFull(postState);
-      postState.winner = 3;
-    } else if (action.actionType == ActionType.DRAW) {
-      assertBoardIsFull(state);
-      postState = state;
       postState.winner = 3;
     }
 
@@ -171,8 +163,8 @@ contract MEApp is CounterfactualApp {
     internal
     pure
   {
-    for (uint256 i = 0; i < 3; i++) {
-      for (uint256 j = 0; j < 3; j++) {
+    for (uint256 i = 0; i < 100; i++) {
+      for (uint256 j = 0; j < 2; j++) {
         require(
           preState.board[i][j] != 0, "assertBoardIsFull: square is empty"
         );
@@ -190,33 +182,9 @@ contract MEApp is CounterfactualApp {
   {
     uint256 expectedSquareState = playerId + 1;
     if (winClaim.winClaimType == WinClaimType.COL) {
-      require(
-        state.board[winClaim.idx][0] == expectedSquareState, "Win Claim not valid"
-      );
-      require(
-        state.board[winClaim.idx][1] == expectedSquareState, "Win Claim not valid"
-      );
-      require(
-        state.board[winClaim.idx][2] == expectedSquareState, "Win Claim not valid"
-      );
-    } else if (winClaim.winClaimType == WinClaimType.ROW) {
-      require(
-        state.board[0][winClaim.idx] == expectedSquareState, "Win Claim not valid"
-      );
-      require(
-        state.board[1][winClaim.idx] == expectedSquareState, "Win Claim not valid"
-      );
-      require(
-        state.board[2][winClaim.idx] == expectedSquareState, "Win Claim not valid"
-      );
-    } else if (winClaim.winClaimType == WinClaimType.DIAG) {
-      require(state.board[0][0] == expectedSquareState, "Win Claim not valid");
-      require(state.board[1][1] == expectedSquareState, "Win Claim not valid");
-      require(state.board[2][2] == expectedSquareState, "Win Claim not valid");
-    } else if (winClaim.winClaimType == WinClaimType.CROSS_DIAG) {
-      require(state.board[2][0] == expectedSquareState, "Win Claim not valid");
-      require(state.board[1][1] == expectedSquareState, "Win Claim not valid");
-      require(state.board[0][2] == expectedSquareState, "Win Claim not valid");
+      for(uint256 i = 0; i < 100; i++){
+        require(state.board[winClaim.idx][i] == expectedSquareState, "Win Claim not valid");
+      }
     }
   }
 
