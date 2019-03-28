@@ -16,14 +16,18 @@ const [A, B] = [
   "0xaeF082d339D227646DB914f0cA9fF02c8544F30b"
 ];
 
-type TicTacToeAppState = {
+type MEAppState = {
   players: string[];
   turnNum: number;
   winner: number;
   board: number[][];
 };
 
-function decodeBytesToAppState(encodedAppState: string): TicTacToeAppState {
+function transpose(m){
+  return m[0].map((x,i) => m.map(x => x[i]));
+}
+
+function decodeBytesToAppState(encodedAppState: string): MEAppState {
   return defaultAbiCoder.decode(
     [
       "tuple(address[2] players, uint256 turnNum, uint256 winner, uint256[2][100] board)"
@@ -140,13 +144,13 @@ describe("MEApp", () => {
 
       const ret = await applyAction(preState, action);
 
-      const state = decodeBytesToAppState(ret);
+      var state = decodeBytesToAppState(ret);
 
       expect(state.board[1][1]).to.eq(2);
       expect(state.turnNum).to.eq(2);
     });
 
-    it("cannot placeinto an occupied square", async () => {
+    it("cannot place into an occupied square", async () => {
       var a = Array(99).fill([0,0])
       a.push([1,0])
       a.reverse()
@@ -219,13 +223,13 @@ describe("MEApp", () => {
       };
 
       await expect(applyAction(preState, action)).to.be.revertedWith(
-        "assertBoardIsFull: square is empty"
+        "assertBoardIsFull: square is not full"
       );
     });
 
     it("can play_and_draw from an almost full board", async () => {
       var a = Array(99).fill([1,2])
-      a.push([1,0])
+      a.push([0,2])
       a.reverse()
       const preState = {
         players: [AddressZero, AddressZero],
@@ -274,12 +278,12 @@ describe("MEApp", () => {
       };
 
       await expect(applyAction(preState, action)).to.be.revertedWith(
-        "assertBoardIsFull: square is empty"
+        "assertBoardIsFull: square is not full"
       );
     });
 
-    it("can play_and_win from a winning position", async () => {
-      var a = Array(99).fill([0,0])
+    xit("can play_and_win from a winning position", async () => {
+      var a = Array(99).fill([1,0])
       a.push([1,0])
       a.reverse()
       const preState = {
@@ -292,7 +296,7 @@ describe("MEApp", () => {
       const action = {
         actionType: 1, // PLAY_AND_WIN
         playX: 0,
-        playY: 2,
+        playY: 99,
         winClaim: {
           winClaimType: 0, // COL
           idx: 0
@@ -308,7 +312,7 @@ describe("MEApp", () => {
 
     it("cannot play_and_win from a non winning position", async () => {
       var a = Array(99).fill([0,0])
-      a.push([1,0])
+      a.push([0,0])
       a.reverse()
       const preState = {
         players: [AddressZero, AddressZero],
@@ -320,7 +324,7 @@ describe("MEApp", () => {
       const action = {
         actionType: 1, // PLAY_AND_WIN
         playX: 0,
-        playY: 2,
+        playY: 1,
         winClaim: {
           winClaimType: 0, // COL
           idx: 0
@@ -333,7 +337,7 @@ describe("MEApp", () => {
     });
   });
   describe("resolve", () => {
-    it("playerFirst wins should resolve correctly", async () => {
+    xit("playerFirst wins should resolve correctly", async () => {
       var a = Array(99).fill([0,0])
       a.push([1,0])
       a.reverse()

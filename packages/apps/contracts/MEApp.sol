@@ -10,7 +10,8 @@ contract MEApp is CounterfactualApp {
   enum ActionType {
     TICK,
     TICK_AND_WIN,
-    TICK_AND_DRAW
+    TICK_AND_DRAW,
+    DRAW
   }
 
   enum WinClaimType {
@@ -37,7 +38,7 @@ contract MEApp is CounterfactualApp {
     address[2] players;
     uint256 turnNum;
     uint256 winner;
-    uint256[100][2] board;
+    uint256[2][100] board;
   }
 
   struct Action {
@@ -83,6 +84,10 @@ contract MEApp is CounterfactualApp {
     } else if (action.actionType == ActionType.TICK_AND_DRAW) {
       postState = playMove(state, state.turnNum % 2, action.playX, action.playY);
       assertBoardIsFull(postState);
+      postState.winner = 3;
+    } else if (action.actionType == ActionType.DRAW) {
+      assertBoardIsFull(state);
+      postState = state;
       postState.winner = 3;
     }
 
@@ -166,7 +171,7 @@ contract MEApp is CounterfactualApp {
     for (uint256 i = 0; i < 100; i++) {
       for (uint256 j = 0; j < 2; j++) {
         require(
-          preState.board[i][j] != 0, "assertBoardIsFull: square is empty"
+          preState.board[i][j] != 0, "assertBoardIsFull: square is not full"
         );
       }
     }
