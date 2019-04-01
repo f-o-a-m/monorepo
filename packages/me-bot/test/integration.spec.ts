@@ -171,14 +171,14 @@ describe("playground-server", () => {
             ],
             turnNum: 0,
             winner: 0,
-            board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+            board: Array(100).fill([0,0])]
           },
           appId: NETWORK_CONTEXT["ME"],
           abiEncodings: {
             actionEncoding:
               "tuple(uint8 actionType, uint256 playX, uint256 playY, tuple(uint8 winClaimType, uint256 idx) winClaim)",
             stateEncoding:
-              "tuple(address[2] players, uint256 turnNum, uint256 winner, uint256[3][3] board)"
+              "tuple(address[2] players, uint256 turnNum, uint256 winner, uint256[2][100] board)"
           },
           asset: {
             assetType: 0

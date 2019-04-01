@@ -15,73 +15,35 @@ function checkDraw(board: Board) {
 
 function checkVictory(board: Board, player: number) {
   return (
-    checkHorizontalVictory(board, player) ||
-    checkVerticalVictory(board, player) ||
-    checkDiagonalVictory(board, player) ||
-    checkCrossDiagonalVictory(board, player)
+    checkVerticalVictory(board, player)
   );
 }
 
-function checkHorizontalVictory(board: Board, player: number) {
-  let idx;
-  const victory = board.some((row: BoardRow, index) => {
-    idx = index;
-    return row.every((square: BoardSquare) =>
-      bigNumberify(square).eq(bigNumberify(player))
-    );
-  });
+function transpose(a) {
+    return Object.keys(a[0]).map(function(c) {
+            return a.map(function(r) { return r[c]; });
+        });
+}
+
+function checkVerticalVictory(board: Board, player: number) {
+  let idx = 0;
+
+  var pl  = player - 1;
+  var opp = player % 2;
+
+  var bt = transpose(board);
+
+  var t1 = bt[pl].filter(a => a != 0);
+  var plL = t1.length;
+  var t2 = bt[opp].filter(a => a != 0);
+  var oppL = t2.length;
+  console.log(plL, oppL)
+  const victory = plL == 100 && oppL != 100;
 
   return victory
     ? {
         idx,
         winClaimType: WinClaimType.COL
-      }
-    : false;
-}
-
-function checkVerticalVictory(board: Board, player: number) {
-  let idx;
-  const victory = board[0].some((columnStart: BoardSquare, index) => {
-    idx = index;
-    return (
-      bigNumberify(columnStart).eq(bigNumberify(player)) &&
-      bigNumberify(board[1][index]).eq(bigNumberify(player)) &&
-      bigNumberify(board[2][index]).eq(bigNumberify(player))
-    );
-  });
-
-  return victory
-    ? {
-        idx,
-        winClaimType: WinClaimType.ROW
-      }
-    : false;
-}
-
-function checkDiagonalVictory(board: Board, player: number) {
-  const victory =
-    bigNumberify(board[0][0]).eq(bigNumberify(player)) &&
-    bigNumberify(board[1][1]).eq(bigNumberify(player)) &&
-    bigNumberify(board[2][2]).eq(bigNumberify(player));
-
-  return victory
-    ? {
-        idx: 0,
-        winClaimType: WinClaimType.DIAG
-      }
-    : false;
-}
-
-function checkCrossDiagonalVictory(board: Board, player: number) {
-  const victory =
-    bigNumberify(board[0][2]).eq(bigNumberify(player)) &&
-    bigNumberify(board[1][1]).eq(bigNumberify(player)) &&
-    bigNumberify(board[2][0]).eq(bigNumberify(player));
-
-  return victory
-    ? {
-        idx: 0,
-        winClaimType: WinClaimType.CROSS_DIAG
       }
     : false;
 }
@@ -117,8 +79,8 @@ function respond(
 }
 
 export function takeTurn(board: Board, botPlayerNumber: number) {
-  const { playX, playY } = makeMove(board);
-  board[playX][playY] = bigNumberify(botPlayerNumber);
+  const { playX, playY } = makeMove(board, botPlayerNumber);
+  board[playY][playX] = bigNumberify(botPlayerNumber);
   const winClaim = checkVictory(board, botPlayerNumber);
 
   return {
@@ -129,17 +91,16 @@ export function takeTurn(board: Board, botPlayerNumber: number) {
   };
 }
 
-function makeMove(board: Board) {
+function makeMove(board: Board, botPlayerNumber: number)   {
   const possibleMoves: Coordinates[] = [];
 
-  for (let x = 0; x < 3; x += 1) {
-    for (let y = 0; y < 3; y += 1) {
-      if (bigNumberify(board[x][y]).toNumber() === 0) {
-        possibleMoves.push({
-          x,
-          y
-        } as Coordinates);
-      }
+  let x = botPlayerNumber - 1;
+  for (let y = 0; y < 100; y += 1) {
+    if (bigNumberify(board[y][x]).toNumber() === 0) {
+      possibleMoves.push({
+        x,
+        y
+      } as Coordinates);
     }
   }
 
@@ -147,7 +108,8 @@ function makeMove(board: Board) {
     throw new Error("Yikes! No place left to move.");
   }
 
-  const move = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+  possibleMoves.sort();
+  const move = possibleMoves[0];
   const playX = move.x;
   const playY = move.y;
 
@@ -231,14 +193,11 @@ enum Winner {
 
 enum ActionType {
   PLAY = 0,
-  PLAY_AND_WIN,
-  PLAY_AND_DRAW,
-  DRAW
+  PLAY_AND_WIN, // = 1
+  PLAY_AND_DRAW, // = 2
+  DRAW // = 3
 }
 
 enum WinClaimType {
   COL = 0,
-  ROW,
-  DIAG,
-  CROSS_DIAG
 }
