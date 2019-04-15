@@ -171,7 +171,7 @@ describe("playground-server", () => {
             ],
             turnNum: 0,
             winner: 0,
-            board: Array(100).fill([0,0])]
+            board: Array(100).fill([0,0])
           },
           appId: NETWORK_CONTEXT["ME"],
           abiEncodings: {
